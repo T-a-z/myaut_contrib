@@ -1,7 +1,7 @@
 ApiHelper = 225, 110, 1159, 831, 
 Helper = 121, 28, 1184, 885, 
 ClsFilename = 198, 198, 993, 867, 
-FileStream = 22, 22, 1090, 794, 
+FileStream = 22, 22, 1090, 794, C
 StringReader = -79, 123, 1178, 610, C
 GlobalDefs = 0, 0, 1035, 744, 
 mod_Replace = 44, 44, 779, 713, C
@@ -26,3 +26,4 @@ CBinaryReader = 154, 154, 1061, 594,
 Deobfuscator = 95, 26, 1151, 695, 
 clsStrCat = 176, 176, 1070, 672, 
 CFileSystem3 = 0, 0, 0, 0, C
+CFileStream = 0, 0, 0, 0, C

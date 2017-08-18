@@ -28,6 +28,7 @@ Class=CBinaryReader; !SourceCode\SRC\CBinaryReader.cls
 Module=Deobfuscator; !SourceCode\SRC\Deobfuscator.bas
 Class=clsStrCat; !SourceCode\SRC\clsStrCat.cls
 Class=CFileSystem3; !SourceCode\SRC\lib\CFileSystem3.cls
+Class=CFileStream; !SourceCode\SRC\lib\CFileStream.cls
 IconForm="FrmMain"
 Startup="FrmMain"
 HelpFile=""
@@ -39,7 +40,7 @@ HelpContextID="0"
 CompatibleMode="0"
 MajorVer=2
 MinorVer=12
-RevisionVer=268
+RevisionVer=270
 AutoIncrementVer=1
 ServerSupportFiles=0
 VersionComments="http://board.deioncube.in/showthread.php?tid=29"

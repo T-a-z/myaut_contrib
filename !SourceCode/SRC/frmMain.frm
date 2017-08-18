@@ -253,6 +253,9 @@ Begin VB.Form FrmMain
       Begin VB.Menu mi_SeperateIncludes 
          Caption         =   "&Seperate includes of *.au3"
       End
+      Begin VB.Menu mnuStripComments 
+         Caption         =   "Strip Comments"
+      End
    End
    Begin VB.Menu mu_BugFix 
       Caption         =   "&BugFix"
@@ -472,12 +475,12 @@ Private Sub mi_CustomDecrypt_Click()
    CustomDecrypt
 End Sub
 
-Function DetectStageToStartAt(fPath As String) As spStages
+Function DetectStageToStartAt(fpath As String) As spStages
     
    Dim ext As String
    
    DetectStageToStartAt = sps_Decompile
-   ext = LCase(fso.GetExtension(fPath))
+   ext = LCase(fso.GetExtension(fpath))
    If Len(ext) = 0 Then Exit Function
    If Left(ext, 3) = ".ex" Then Exit Function
    
@@ -498,25 +501,25 @@ Private Sub mi_Reload_Click()
    Dim stage As spStages
    Dim StartAt_DeTokenize As Boolean
    Dim er As ErrReturns
-   Dim fPath As String
+   Dim fpath As String
    
    List2.Clear
    ListLog.Clear
    List_Positions.Clear
    lstDirMode.Visible = False
    isAutomationRun = False
-   fPath = txtFilePath
+   fpath = txtFilePath
     
-   If fso.FolderExists(fPath) Then
+   If fso.FolderExists(fpath) Then
        Log "Manual mode can not handle directories."
-   ElseIf fso.FileExists(fPath) Then
-        stage = DetectStageToStartAt(fPath)
-        er = StartProcessing(fPath, stage)
+   ElseIf fso.FileExists(fpath) Then
+        stage = DetectStageToStartAt(fpath)
+        er = StartProcessing(fpath, stage)
         DecompileSuccess = (er = er_SUCCESS)
         'we have a leak somewhere? some files end up locked...
         FILE.CloseFile 'not helping...
    Else
-       Log "File or folder not found: " & fPath
+       Log "File or folder not found: " & fpath
    End If
    
 End Sub
@@ -696,12 +699,12 @@ Log "ERR: " & Err.Description & "in  FrmMain.Console_OnOutput(TextLine , Program
 End Sub
 
  ' Show first 100 Lines (used in console output)
-Private Sub ShowScriptPart(ScriptLines, curline&, Optional Lines& = 100)
+Private Sub ShowScriptPart(ScriptLines, curline&, Optional lines& = 100)
    Dim ScriptLinesPreview_Start&
    ScriptLinesPreview_Start = Min(curline, UBound(ScriptLines))
    
    Dim ScriptLinesPreview_End&
-   ScriptLinesPreview_End = Min(curline + Lines, UBound(ScriptLines))
+   ScriptLinesPreview_End = Min(curline + lines, UBound(ScriptLines))
    
    ReDim ScriptLinesPreview(ScriptLinesPreview_Start To ScriptLinesPreview_End)
    
@@ -1229,7 +1232,7 @@ End Function
 
 Function AutomatedController() As Boolean
     
-    Dim fPath As String
+    Dim fpath As String
     Dim er As ErrReturns
     Dim tmp As String
     Dim i As Long, j As Long
@@ -1238,20 +1241,20 @@ Function AutomatedController() As Boolean
     
     List2.Clear
     List_Positions.Clear
-    fPath = txtFilePath
+    fpath = txtFilePath
     
-    If Not FileExists(fPath) Then
-        cLog "File not found: " & fPath
+    If Not FileExists(fpath) Then
+        cLog "File not found: " & fpath
         Exit Function
     End If
        
-    stage = DetectStageToStartAt(fPath)
+    stage = DetectStageToStartAt(fpath)
     Txt_Scriptstart = Empty
     
     For i = 4 To 1 Step -1
         DeCompiler.AutoChooseVersion = i
         cLog "Trying run with default: " & AutoVerToStr(i)
-        er = StartProcessing(fPath, stage)
+        er = StartProcessing(fpath, stage)
         If er = ERR_NO_AUT_EXE Then Exit For
         If er = ERR_CANCEL_ALL Then Exit Function
         If er = er_SUCCESS Then
@@ -1272,7 +1275,7 @@ Function AutomatedController() As Boolean
             For i = 4 To 1 Step -1
                 DeCompiler.AutoChooseVersion = i
                 cLog "Starting at script offset " & j & " = " & Txt_Scriptstart & " default: " & AutoVerToStr(i)
-                er = StartProcessing(fPath, stage)
+                er = StartProcessing(fpath, stage)
     '            If er = ERR_NO_AUT_EXE Then Exit For
                 If er = ERR_CANCEL_ALL Then Exit Function
                 If er = er_SUCCESS Then
@@ -1292,12 +1295,12 @@ Function AutomatedController() As Boolean
     Txt_Scriptstart = Empty
     cLog "Ok, lets see if we can unUPX the sample..."
     
-    If Not canAttemptUnUPX(fPath) Then
+    If Not canAttemptUnUPX(fpath) Then
         cLog "This sample does not appear upx compressed, aborting"
         Exit Function
     End If
     
-    If Not UnUPX(fPath, tmp) Then
+    If Not UnUPX(fpath, tmp) Then
         cLog "upx decompress failed..."
         Exit Function
     End If
@@ -1305,7 +1308,7 @@ Function AutomatedController() As Boolean
     For i = 4 To 1 Step -1
         DeCompiler.AutoChooseVersion = i
         cLog "Trying run with default: " & AutoVerToStr(i)
-        er = StartProcessing(fPath, stage)
+        er = StartProcessing(fpath, stage)
         If er = ERR_NO_AUT_EXE Then Exit For
         If er = ERR_CANCEL_ALL Then Exit Function
         If er = er_SUCCESS Then
@@ -1326,7 +1329,7 @@ Function AutomatedController() As Boolean
             For i = 4 To 1 Step -1
                 DeCompiler.AutoChooseVersion = i
                 cLog "Starting at script offset " & j & " = " & Txt_Scriptstart & " default: " & AutoVerToStr(i)
-                er = StartProcessing(fPath, stage)
+                er = StartProcessing(fpath, stage)
     '            If er = ERR_NO_AUT_EXE Then Exit For
                 If er = ERR_CANCEL_ALL Then Exit Function
                 If er = er_SUCCESS Then
@@ -1347,7 +1350,7 @@ Function AutomatedController() As Boolean
 End Function
 
 
-Function StartProcessing(fPath As String, Optional startProcessingAtStage As spStages = sps_Decompile) As ErrReturns
+Function StartProcessing(fpath As String, Optional startProcessingAtStage As spStages = sps_Decompile) As ErrReturns
 
     'note no exit function calls, must cleanup at end of function and give retval
     On Error Resume Next
@@ -1358,7 +1361,7 @@ Function StartProcessing(fPath As String, Optional startProcessingAtStage As spS
     
     LogOpen
     ResetUI
-    filename = fPath 'global clsFileName object used and abused throughout sub functions...
+    filename = fpath 'global clsFileName object used and abused throughout sub functions...
     StartBenchMark startTime
     
     Log "Starting processing at stage: " & StageToStr(startProcessingAtStage)
@@ -1376,7 +1379,7 @@ Function StartProcessing(fPath As String, Optional startProcessingAtStage As spS
         If Err.Number <> 0 Then GoTo final
         Log "Decompiled ok!"
     Else
-        ExtractedFiles.Add fPath, "MainScript"
+        ExtractedFiles.Add fpath, "MainScript"
     End If
     
     filename = ExtractedFiles("MainScript")
@@ -1507,6 +1510,7 @@ Private Function DoAutomationRun()
     StartBenchMark startTime
     isAutomationRun = True
     DecompileSuccess = AutomatedController()
+    If Not DecompileSuccess Then StripComments txtFilePath
     isAutomationRun = False
     
     If Len(MD5PassphraseHashText) > 0 Then cLog "MD5 Password hash: " & MD5PassphraseHashText
@@ -1609,6 +1613,17 @@ Private Sub mnuScanFile_Click()
     mi_Reload.Enabled = Not fso.FolderExists(txtFilePath)
 End Sub
 
+Private Sub mnuStripComments_Click()
+    Dim p As String
+    ListLog.Clear
+    List2.Clear
+    If Not fso.FileExists(txtFilePath) Then
+        Log "Enter file to process in textbox"
+    Else
+        StripComments txtFilePath
+    End If
+End Sub
+
 Private Sub mnuUnUPX_Click()
     Dim tmp As String
     If UnUPX(txtFilePath, tmp) Then
@@ -1709,6 +1724,66 @@ Public Sub updateStartLocations_List()
    End With
 updateStartLocations_List_err:
 End Sub
+
+'they can use autoit.exe [script file] to run on the command line
+'these script files dont have to be compiled and can just be huge blocks of
+'commented out lines which also supports binary data..this function will remove it
+'and output just he actual script..can be run manually from tools menu, or automatically if
+'the decompile fails other tests..
+Function StripComments(fpath) As Boolean
+    On Error GoTo hell
+    
+    Dim f As Long, pf, t
+    Dim b(2) As Byte
+    Dim fs As New CFileStream
+    Dim fs2 As New CFileStream
+    Dim lines As Long, comments As Long
+    
+    cLog "Trying to strip comments"
+    
+    f = FreeFile
+    Open fpath For Binary As f
+    Get f, , b()
+    Close f
+    
+    If b(0) = Asc("M") And b(1) = Asc("Z") Then
+        cLog "MZ file aborting..."
+        Exit Function
+    End If
+    
+    pf = fso.GetParentFolder(fpath)
+    fs.Open_ fpath
+    fs2.Open_ fpath & ".stripped", otWrite
+    
+    While Not fs.eof
+        t = fs.ReadLine
+        If Left(t, 1) = "#" Or Left(t, 1) = ";" Or Len(Trim(t)) = 0 Or t = vbCrLf Then
+            comments = comments + 1
+            DoEvents
+        Else
+            fs2.Write_ t
+            lines = lines + 1
+        End If
+    Wend
+    
+    fs.Close_
+    fs2.Close_
+    If lines = 0 Then
+        cLog "No results..."
+        Kill fs2.FilePath
+    Else
+        cLog comments & " comments stripped, " & lines & " lines saved..."
+        cLog "Saved to: " & fs2.FilePath
+        Log "Stripped comments may have worked check: " & fs2.FilePath
+    End If
+        
+    Exit Function
+hell:
+    fs.Close_
+    fs2.Close_
+    cLog "Error stripping comments: " & Err.Description
+    
+End Function
 
  
 'Sub ORGINAL_StartProcessing()
